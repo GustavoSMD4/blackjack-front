@@ -6,6 +6,7 @@ from views.numerosJogadores import NumeroJogadoresView
 
 def main(page: ft.Page):
     page.title = "Blackjack"
+    page.theme_mode = ft.ThemeMode.LIGHT
     page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     page.bgcolor = "#FFFAFA"
     page.scroll="auto"
