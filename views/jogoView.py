@@ -164,7 +164,7 @@ class JogoView(ft.View):
         rowCartas = ft.Row()
         for carta in cartas:
             rowCartas.controls.append(
-                ft.Image(f"assets/{carta.getNomeImagem()}")
+                ft.Image(f"{carta.getNomeImagem()}")
             )
         return rowCartas
 
