@@ -161,10 +161,10 @@ class JogoView(ft.View):
 
     def __getImagensCartas(self, cartas: list[Carta]):
         """Gera a lista de imagens das cartas."""
-        rowCartas = ft.ResponsiveRow()
+        rowCartas = ft.Row(scroll="auto")
         for carta in cartas:
             rowCartas.controls.append(
-                ft.Image(f"{carta.getNomeImagem()}", width=100, height=200, fit=ft.ImageFit.CONTAIN)
+                ft.Image(f"{carta.getNomeImagem()}", width=70, height=200, fit=ft.ImageFit.CONTAIN)
             )
         return rowCartas
 
