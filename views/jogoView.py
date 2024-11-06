@@ -143,7 +143,7 @@ class JogoView(ft.View):
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 self.nomeJogador,
-                self.__getImagensCartasExecutavel(self.__jogador.getCards())
+                self.__getImagensCartas(self.__jogador.getCards())
             ]
         )
 
@@ -155,7 +155,7 @@ class JogoView(ft.View):
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 self.nomeJogador,
-                self.__getImagensCartasExecutavel(self.blackjack.dealer.getCards())
+                self.__getImagensCartas(self.blackjack.dealer.getCards())
             ]
         )
 
