@@ -160,13 +160,31 @@ class JogoView(ft.View):
         )
 
     def __getImagensCartas(self, cartas: list[Carta]):
-        """Gera a lista de imagens das cartas."""
+        """Gera a lista de imagens das cartas, com 3 cartas por linha."""
+        column = ft.Column(scroll="auto")
         rowCartas = ft.Row(scroll="auto")
+    
+        # Contador para adicionar uma nova linha a cada 3 cartas
+        contador = 0
+    
         for carta in cartas:
+            # Adiciona a carta à linha atual
             rowCartas.controls.append(
-                ft.Image(f"{carta.getNomeImagem()}", width=70, height=200, fit=ft.ImageFit.CONTAIN)
+                ft.Image(f"{carta.getNomeImagem()}", width=170, height=200, fit=ft.ImageFit.FIT_HEIGHT)
             )
-        return rowCartas
+            contador += 1
+        
+            # Quando 3 cartas são adicionadas à linha, adiciona a linha à coluna e cria uma nova linha
+            if contador == 3:
+                column.controls.append(rowCartas)
+                rowCartas = ft.Row(scroll="auto")  # Cria uma nova linha para as próximas cartas
+                contador = 0  # Reseta o contador
+    
+        # Adiciona a última linha (caso não tenha completado 3 cartas na última linha)
+        if contador > 0:
+            column.controls.append(rowCartas)
+    
+        return column
 
     def __getImagensCartasExecutavel(self, cartas: list[Carta]):
         """Gera a lista de imagens das cartas para a versão executável."""
