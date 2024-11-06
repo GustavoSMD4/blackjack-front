@@ -69,7 +69,7 @@ class Blackjack:
                 return f"{jogador.getNomeJogador()} estourou, dealer Ganhou!"
                 continue
 
-            if jogador.getValorMao() < 21 and self.dealer.getValorMao() > 21:
+            if jogador.getValorMao() <= 21 and self.dealer.getValorMao() > 21:
                 return f"Dealer estourou, {jogador.getNomeJogador()} ganhou!"
                 continue
 
