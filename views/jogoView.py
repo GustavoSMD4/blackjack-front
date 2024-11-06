@@ -170,7 +170,7 @@ class JogoView(ft.View):
         for carta in cartas:
             # Adiciona a carta à linha atual
             rowCartas.controls.append(
-                ft.Image(f"{carta.getNomeImagem()}", width=170, height=200, fit=ft.ImageFit.FIT_HEIGHT)
+                ft.Image(f"{carta.getNomeImagem()}", width=130, height=200, fit=ft.ImageFit.FIT_HEIGHT)
             )
             contador += 1
         
