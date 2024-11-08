@@ -14,7 +14,7 @@ class States:
         return states
     
     def login(self, usuario, senha):
-        response = requests.post("https://gustavosmd4gamble.pythonanywhere.com/usuario/login", json=dict(usuario=usuario, senha=senha))
+        response = requests.post("https://gustavosmd4blackjack.pythonanywhere.com/usuario/login", json=dict(usuario=usuario, senha=senha))
         
         if response.status_code != 200:
             self.page.open(ft.SnackBar(ft.Text(response.json().get("error"))))
@@ -23,7 +23,7 @@ class States:
         self.__usuarioLogado = response.json().get("body")
         
     def criarConta(self, usuario, senha, nome):
-        response = requests.post("https://gustavosmd4gamble.pythonanywhere.com/usuario/create", json=dict(usuario=usuario, senha=senha, nome=nome))
+        response = requests.post("https://gustavosmd4blackjack.pythonanywhere.com/usuario/create", json=dict(usuario=usuario, senha=senha, nome=nome))
         
         if response.status_code != 200:
             self.page.open(ft.SnackBar(ft.Text(response.json().get("error"))))
@@ -32,7 +32,7 @@ class States:
         self.login(usuario, senha)
         
     def updateSaldo(self, saldo: float):
-        response = requests.post("https://gustavosmd4gamble.pythonanywhere.com/usuario/addsaldo", json=dict(usuario=self.__usuarioLogado["usuario"], saldo=saldo))
+        response = requests.post("https://gustavosmd4blackjack.pythonanywhere.com/usuario/addsaldo", json=dict(usuario=self.__usuarioLogado["usuario"], saldo=saldo))
         
         if response.status_code != 200:
             self.page.open(ft.SnackBar(ft.Text(response.json().get("error"))))
