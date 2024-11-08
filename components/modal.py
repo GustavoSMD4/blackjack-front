@@ -19,6 +19,7 @@ class Modal:
         if isinstance(title, str):
             self.__modal.title = ft.Text(title)
             return
+        
         self.__modal.title = title
         return
         
@@ -30,8 +31,8 @@ class Modal:
         self.__modal.content = content
         return
         
-    def setOnDismiss(self, text: str):
-        self.__modal.on_dismiss = lambda _: ft.Text(text)
+    def setOnDismiss(self, func):
+        self.__modal.on_dismiss = lambda _: func()
         return
         
     def setActionAoConfirmar(self, funcao):
@@ -54,6 +55,11 @@ class Modal:
             
     def removeActionButtons(self):
         self.__modal.actions = None
+        
+    def removeCancelarButton(self):
+        self.__modal.actions = [
+            ft.TextButton("Confirmar", key="confirmar", on_click=lambda _: self.page.close(self.__modal)),
+        ]
                 
     def __buildModal(self):
         self.__modal = ft.AlertDialog()

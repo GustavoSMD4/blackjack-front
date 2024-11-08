@@ -17,16 +17,16 @@ class JogoView(ft.View):
         self.scroll = "auto"
         self.page = page
         self.states = states
-        self.blackjack = Blackjack(self.states.getTransferenciaByKey("jogadores"), 4)
+        self.blackjack = Blackjack([self.states.getUsuarioLogado()["usuario"]], 4)
         self.__jogador = self.blackjack.jogadores[0]
         self.__columnCartasJogador = None
         self.nomeJogador = None
-        self.__jogadorPodeComprar = True
         self.__columnCartasDealer = None
+        self.__valorAposta = ft.TextField(label="Valor aposta(somente números pares)", value="100")
         
         # Criação dos botões com a lógica correta
         self.__create_buttons()
-        self.__build()
+        self.__openModalAposta()
 
     def __create_buttons(self):
         """Recria os botões, com a lógica de habilitar/desabilitar correta."""
@@ -50,19 +50,90 @@ class JogoView(ft.View):
             tooltip="Ao dobrar você vai receber somente mais uma carta!",
             on_click=self.__handleDoubleDown
         )
-
-        self.__botaoReiniciar = ft.ElevatedButton(
-            text="Reiniciar",
-            icon=ft.icons.RESTART_ALT,
-            icon_color=ft.colors.BLUE,
-            on_click=self.__handleReset
+        
+    def __openModalAposta(self):
+        
+        def addRemove(e: ft.ControlEvent):
+            valor = float(self.__valorAposta.value)
+            
+            if e.control.key == "add":
+                self.__valorAposta.value = valor + 10
+                
+            if e.control.key == "remove":
+                self.__valorAposta.value = valor - 10
+            
+            self.__valorAposta.update()
+            
+        
+        container = ft.Container(
+            content=ft.Column(
+                width=500,
+                controls=[
+                    ft.TextField(value=self.states.getUsuarioLogado()["usuario"], disabled=True, label="Jogador"),
+                    ft.Row(
+                        controls=[
+                            ft.Text("Saldo:", size=18, weight="bold"),
+                            ft.Text(self.states.getUsuarioLogado()["saldo"], size=18, weight="bold")
+                        ]
+                    ),
+                    ft.Row(
+                        controls=[
+                            ft.IconButton(
+                                icon=ft.icons.REMOVE,
+                                key="remove",
+                                on_click=addRemove
+                            ),
+                            
+                            self.__valorAposta,
+                            
+                            ft.IconButton(
+                                icon=ft.icons.ADD,
+                                key="add",
+                                on_click=addRemove
+                            )
+                            
+                        ]
+                    )
+                ]
+            )
         )
+        
+        modal = Modal.newModal(self.page)
+        modal.removeCancelarButton()
+        modal.setTitle("Valor da aposta")
+        modal.setContent(container)
+        modal.setActionAoConfirmar(self.__confirmarAposta)
+        self.page.open(modal.getModal())
+        
+    def __confirmarAposta(self):
+        if not self.__valorAposta.value:
+            return  
 
+        valor_aposta = float(self.__valorAposta.value)
+
+        if valor_aposta > self.states.getUsuarioLogado()["saldo"]:
+            self.page.open(ft.SnackBar(ft.Text("Jogador não tem saldo para realizar essa aposta!")))
+            self.__openModalAposta()  # Reabre o modal
+            return  # Interrompe a execução do código para evitar reentradas
+
+        if valor_aposta % 2 != 0:
+            self.page.open(ft.SnackBar(ft.Text("Aposta só pode ser número par!")))
+            self.__openModalAposta()  # Reabre o modal
+            return  # Interrompe a execução do código para evitar reentradas
+
+        if valor_aposta <= 0:
+            self.page.open(ft.SnackBar(ft.Text("Aposta precisa ser maior que zero!")))
+            self.__openModalAposta()  # Reabre o modal
+            return  # Interrompe a execução do código para evitar reentradas
+
+        self.__jogador.setValorAposta(valor_aposta)
+        self.__build()
+        
     def __build(self):
         """Constrói a interface do jogo com as cartas e botões atualizados."""
         self.__buildContainerCartasDealer()
         self.__buildContainerCartasJogador()
-
+        
         containerDealer = ft.Column(
             controls=[self.__columnCartasDealer]
         )
@@ -79,7 +150,6 @@ class JogoView(ft.View):
                     self.__botaoComprar,
                     self.__botaoDoubleDown,
                     self.__botaoParar,
-                    self.__botaoReiniciar,
                 ]
             ),
         )
@@ -112,7 +182,16 @@ class JogoView(ft.View):
 
     def __handleDoubleDown(self, e):
         """Lógica para quando o jogador dobrar."""
+        
+        if self.states.getUsuarioLogado()["saldo"] < self.__jogador.getValorAposta() * 2:
+            self.page.open(ft.SnackBar(ft.Text("Jogador não tem saldo para dobrar a aposta!")))
+            return
+        
         if self.__jogador.getValorMao() < 21:
+            valorAposta = (self.__jogador.getValorAposta() * 2)
+            self.__jogador.setValorAposta(valorAposta)
+            self.__valorAposta.value = valorAposta
+            self.__valorAposta.update()
             self.blackjack.adicionarCartaJogador(self.__jogador)
             self.__jogadaDealer()
 
@@ -123,11 +202,11 @@ class JogoView(ft.View):
     def __handleReset(self, e):
         """Lógica para reiniciar o jogo."""
         self.__resetClasse()
-        self.__build()
+        self.__openModalAposta()
 
     def __resetClasse(self):
         """Reseta a classe e reinicializa o estado do jogo."""
-        self.blackjack = Blackjack(self.states.getTransferenciaByKey("jogadores"), 4)
+        self.blackjack = Blackjack([self.states.getUsuarioLogado()["usuario"]], 4)
         self.__jogador = self.blackjack.jogadores[0]
         self.__columnCartasJogador = None
         self.__columnCartasDealer = None
@@ -143,6 +222,7 @@ class JogoView(ft.View):
             alignment=ft.MainAxisAlignment.CENTER,
             controls=[
                 self.nomeJogador,
+                ft.Text(value=f"Valor da aposta: {self.__jogador.getValorAposta()}", weight="bold", size=16),
                 self.__getImagensCartas(self.__jogador.getCards())
             ]
         )
@@ -199,10 +279,13 @@ class JogoView(ft.View):
                 ft.Image(caminho_imagem)
             )
         return rowCartas
+    
+    def __atualizarSaldoAposJogada(self, valorAdicionar):
+        """Lógica para atualizar o saldo do jogador após uma jogada"""
+        self.states.updateSaldo(valorAdicionar)
 
     def __jogadaDealer(self):
         """Lógica para a jogada do dealer após o jogador parar ou dobrar."""
-        self.__botaoReiniciar.disabled = True
         self.__botaoComprar.disabled = True
         self.__botaoDoubleDown.disabled = True
         self.__botaoParar.disabled = True
@@ -213,11 +296,34 @@ class JogoView(ft.View):
             self.__build()
             time.sleep(2)
         
-        mensagem = self.blackjack.verificarVencedor()
+        resposta = self.blackjack.verificarVencedor()
+        
+        mensagem = resposta.get("mensagem")
+        ganhou = "Empate"
+        
+        if resposta.get("ganhou") == 1:
+            ganhou = f"{self.__jogador.getNomeJogador()} Ganhou!"
+            
+        if resposta.get("ganhou") == 0:
+            ganhou = f"{self.__jogador.getNomeJogador()} Perdeu!"
+            
+        content = ft.Container(
+            content=ft.Column(
+                alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                width=300,
+                controls=[
+                    ft.Text(ganhou, size=20, weight="bold"),
+                    ft.Text(value=f"Total {resposta.get('valor')}", size=20, weight="bold")
+                ]
+            )
+        )
+        
+        self.__atualizarSaldoAposJogada(resposta.get('valor'))
         
         modal = Modal.newModal(self.page)
         modal.setTitle(mensagem)
-        modal.setContent(mensagem)
+        modal.setContent(content)
         modal.removeActionButtons()
         self.page.open(modal.getModal())
         time.sleep(4)

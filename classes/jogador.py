@@ -6,20 +6,11 @@ class Jogador:
     def __init__(self, nomeJogador=None, dealer=False):
         self.__nomeJogador = nomeJogador
         self.__cartas: list[Carta] = []
-        self.__dealer = False
+        self.__valorAposta: float = None
         
     @classmethod
     def newJogador(cls):
         return cls()
-    
-    def printCards(self):
-        for carta in self.__cartas:
-            print(carta.getRank(), carta.getSuit())
-            
-    def printMao(self):
-        print(f"Cartas de {self.__nomeJogador}")
-        self.printCards()
-        print(f"{self.__nomeJogador} tem {self.getValorMao()}")
     
     def getValorMao(self):
         valor = 0
@@ -42,15 +33,14 @@ class Jogador:
     def setNomeJogador(self, nomeJogador: str):
         self.__nomeJogador = nomeJogador
         
+    def getValorAposta(self):
+        return self.__valorAposta
+    
+    def setValorAposta(self, valor):
+        self.__valorAposta = valor
+        
     def getCards(self):
         return self.__cartas
 
     def addCard(self, carta):
         self.__cartas.append(carta)
-
-    def isDealer(self):
-        return self.__dealer
-
-    def setDealer(self, dealer: bool):
-        self.__dealer = dealer
-        
