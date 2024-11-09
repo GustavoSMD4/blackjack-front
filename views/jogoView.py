@@ -76,7 +76,7 @@ class JogoView(ft.View):
                             ft.Text(self.states.getUsuarioLogado()["saldo"], size=18, weight="bold")
                         ]
                     ),
-                    ft.Row(
+                    ft.ResponsiveRow(
                         controls=[
                             ft.IconButton(
                                 icon=ft.icons.REMOVE,
