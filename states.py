@@ -15,7 +15,7 @@ class States:
     
     def login(self, usuario, senha):
         response = requests.post("https://gustavosmd4blackjack.pythonanywhere.com/usuario/login", json=dict(usuario=usuario, senha=senha))
-        print(response.text)
+       
         if response.status_code != 200:
             self.page.open(ft.SnackBar(ft.Text(response.json().get("error"))))
             return

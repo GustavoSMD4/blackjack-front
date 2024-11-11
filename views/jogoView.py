@@ -67,6 +67,7 @@ class JogoView(ft.View):
         container = ft.Container(
             content=ft.Column(
                 width=500,
+                height=300,
                 controls=[
                     ft.TextField(value=self.states.getUsuarioLogado()["usuario"], disabled=True, label="Jogador"),
                     ft.Row(
@@ -304,7 +305,7 @@ class JogoView(ft.View):
         
         resposta = self.blackjack.verificarVencedor()
         
-        mensagem = resposta.get("mensagem")
+        mensagem = resposta.get("message")
         ganhou = "Empate"
         
         if resposta.get("ganhou") == 1:
@@ -317,9 +318,10 @@ class JogoView(ft.View):
             content=ft.Column(
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                width=300,
+                width=500,
+                height=300,
                 controls=[
-                    ft.Text(ganhou, size=20, weight="bold"),
+                    ft.Text(mensagem, weight="bold"),
                     ft.Text(value=f"Total {resposta.get('valor')}", size=20, weight="bold")
                 ]
             )
@@ -328,7 +330,7 @@ class JogoView(ft.View):
         self.__atualizarSaldoAposJogada(resposta.get('valor'))
         
         modal = Modal.newModal(self.page)
-        modal.setTitle(mensagem)
+        modal.setTitle(ft.Text(ganhou, size=20, weight="bold"))
         modal.setContent(content)
         modal.removeActionButtons()
         self.page.open(modal.getModal())
