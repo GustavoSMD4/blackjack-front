@@ -3,7 +3,6 @@ import sys
 import time
 import flet as ft
 
-from classes.baralho import Baralho
 from classes.blackjack import Blackjack
 from classes.carta import Carta
 from components.modal import Modal
@@ -93,6 +92,13 @@ class JogoView(ft.View):
                             )
                             
                         ]
+                    ),
+                    
+                    ft.ElevatedButton(
+                        text="Adicionar Saldo",
+                        icon=ft.icons.MONEY,
+                        bgcolor="blue",
+                        on_click=lambda _: self.page.go("/addsaldo")
                     )
                 ]
             )

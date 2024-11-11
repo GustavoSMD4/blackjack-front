@@ -1,6 +1,7 @@
 import flet as ft
 
 from states import States
+from views.adicionarSaldo import AdicionarSaldoView
 from views.criarConta import CriarContaView
 from views.jogoView import JogoView
 from views.loginView import LoginView
@@ -26,6 +27,9 @@ def main(page: ft.Page):
             
         if page.route == "/criarconta":
             page.views.append(CriarContaView(page, states))
+            
+        if page.route == "/addsaldo":
+            page.views.append(AdicionarSaldoView(page, states))
         
         if page.route == "/blackjack":
             page.views.append(JogoView(page, states))
