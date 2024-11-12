@@ -5,8 +5,10 @@ import flet as ft
 
 from classes.blackjack import Blackjack
 from classes.carta import Carta
+from classes.jogador import Jogador
 from components.modal import Modal
 from states import States
+from views.jogoViewControls import JogoViewControls
 
 class JogoView(ft.View):
     def __init__(self, page: ft.Page, states: States):
@@ -18,10 +20,11 @@ class JogoView(ft.View):
         self.states = states
         self.blackjack = Blackjack([self.states.getUsuarioLogado()["usuario"]], 4)
         self.__jogador = self.blackjack.jogadores[0]
-        self.__columnCartasJogador = None
         self.nomeJogador = None
-        self.__columnCartasDealer = None
         self.__valorAposta = ft.TextField(label="Valor aposta(somente números pares)", value="100")
+        self.__maoDividida = False
+        self.__contadorMaoDividida = 1
+        self.__maosDivididas: list[Jogador] = None
         
         # Criação dos botões com a lógica correta
         self.__create_buttons()
@@ -47,7 +50,15 @@ class JogoView(ft.View):
             icon=ft.icons.DOUBLE_ARROW, text="Dobrar",
             icon_color=ft.colors.GREEN,
             tooltip="Ao dobrar você vai receber somente mais uma carta!",
-            on_click=self.__handleDoubleDown
+            on_click=self.__handleDoubleDown,
+            disabled=not self.blackjack.verificarJogadorPodeContinuar(self.__jogador)
+        )
+        
+        self.__botaoSplit = ft.ElevatedButton(
+            text="Dividir",
+            icon=ft.icons.SPLITSCREEN,
+            disabled=not self.blackjack.verificarJogadorPodeDividir(self.__jogador),
+            on_click=self.__handleSplit
         )
         
     def __openModalAposta(self):
@@ -138,40 +149,32 @@ class JogoView(ft.View):
         
     def __build(self):
         """Constrói a interface do jogo com as cartas e botões atualizados."""
-        self.__buildContainerCartasDealer()
-        self.__buildContainerCartasJogador()
         
-        containerDealer = ft.Column(
-            controls=[self.__columnCartasDealer]
-        )
-        
-        containerJogador = ft.Column(
-            controls=[self.__columnCartasJogador]
-        )
-
         self.bottom_appbar = ft.BottomAppBar(
             bgcolor=ft.colors.BLUE,
-            content=ft.Row(
+            height=100,
+            content=ft.Column(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
-                    self.__botaoComprar,
-                    self.__botaoDoubleDown,
+                    ft.Row(
+                        controls=[
+                            self.__botaoComprar,
+                            self.__botaoDoubleDown,
+                            self.__botaoSplit,
+                        ]
+                    ),
+                    
                     self.__botaoParar,
+                    
                 ]
             ),
         )
-
-        self.controls = [ft.Container(
-            content=ft.Column(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    containerDealer,
-                    ft.Divider(thickness=10, color="black"),
-                    containerJogador
-                ]
-            )
-        )]
-
+        
+        self.controls = [JogoViewControls(self.page, self.states, self.__jogador, self.blackjack).controls()]
+        
+        if self.__maoDividida == True:
+            self.controls.insert(0, ft.Text("Dividir ainda não está funcionando corretamente!", size=30, weight="bold"))
+        
         self.page.update()
 
     def __handleAddCartaJogador(self, e):
@@ -184,7 +187,7 @@ class JogoView(ft.View):
         self.__botaoDoubleDown.disabled = True
         self.__build()
         
-        if self.__jogador.getValorMao() >= 21:
+        if self.__jogador.getValorMao() >= 21 and self.__maoDividida == False:
             self.__jogadaDealer()
 
     def __handleDoubleDown(self, e):
@@ -200,11 +203,46 @@ class JogoView(ft.View):
             self.__valorAposta.value = valorAposta
             self.__valorAposta.update()
             self.blackjack.adicionarCartaJogador(self.__jogador)
-            self.__jogadaDealer()
+            
+            if self.__maoDividida == False:
+                self.__jogadaDealer()
 
+    def __handleSplit(self, e):
+        if not self.blackjack.verificarJogadorPodeDividir(self.__jogador):
+            self.page.open(ft.SnackBar(ft.Text("Jogador não pode dividir")))
+            return
+        
+        if self.states.getUsuarioLogado()["saldo"] < self.__jogador.getValorAposta() * 2:
+            self.page.open(ft.SnackBar(ft.Text("Jogador não tem saldo para dobrar a aposta!")))
+            return
+        
+        self.__botaoSplit.disabled = True
+        self.__maoDividida = True
+        self.__maosDivididas = self.blackjack.dividirMaoJogador(self.__jogador)
+        self.__jogadaDividida()
+        
+    def __jogadaDividida(self):
+        if self.__contadorMaoDividida == 1:
+            self.__jogador = self.__maosDivididas[0]
+            self.__build()
+            return
+            
+        self.__jogador = self.__maosDivididas[1]
+        self.__build()
+        
     def __handleParar(self, e):
         """Lógica para quando o jogador parar a sua jogada."""
-        self.__jogadaDealer()
+        if self.__maoDividida == False:
+            self.__jogadaDealer()
+            return
+        
+        if self.__contadorMaoDividida == 1:
+            self.__contadorMaoDividida = 2
+            self.__jogadaDividida()
+            return
+            
+        if self.__contadorMaoDividida == 2:
+            self.__jogadaDealer()
 
     def __handleReset(self, e):
         """Lógica para reiniciar o jogo."""
@@ -215,78 +253,13 @@ class JogoView(ft.View):
         """Reseta a classe e reinicializa o estado do jogo."""
         self.blackjack = Blackjack([self.states.getUsuarioLogado()["usuario"]], 4)
         self.__jogador = self.blackjack.jogadores[0]
-        self.__columnCartasJogador = None
-        self.__columnCartasDealer = None
+        self.__maoDividida = False
+        self.__contadorMaoDividida = 1
+        self.__maosDivididas: list[Jogador] = None
         
         # Recria os botões com os estados corretos após o reset
         self.__create_buttons()
 
-    def __buildContainerCartasJogador(self):
-        """Constrói o container de cartas do jogador."""
-        self.nomeJogador = ft.Text(f"{self.__jogador.getNomeJogador()} - tem {self.__jogador.getValorMao()}", weight="bold", size=20, text_align=ft.TextAlign.CENTER)
-        
-        self.__columnCartasJogador = ft.Column(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[
-                self.nomeJogador,
-                ft.Text(value=f"Valor da aposta: {self.__jogador.getValorAposta()}", weight="bold", size=16),
-                self.__getImagensCartas(self.__jogador.getCards())
-            ]
-        )
-
-    def __buildContainerCartasDealer(self):
-        """Constrói o container de cartas do dealer."""
-        self.nomeJogador = ft.Text(f"{self.blackjack.dealer.getNomeJogador()} - tem {self.blackjack.dealer.getValorMao()}", weight="bold", size=20, text_align=ft.TextAlign.CENTER)
-        
-        self.__columnCartasDealer = ft.Column(
-            alignment=ft.MainAxisAlignment.CENTER,
-            controls=[
-                self.nomeJogador,
-                self.__getImagensCartas(self.blackjack.dealer.getCards())
-            ]
-        )
-
-    def __getImagensCartas(self, cartas: list[Carta]):
-        """Gera a lista de imagens das cartas, com 3 cartas por linha."""
-        column = ft.Column(scroll="auto")
-        rowCartas = ft.Row(scroll="auto")
-    
-        # Contador para adicionar uma nova linha a cada 3 cartas
-        contador = 0
-    
-        for carta in cartas:
-            # Adiciona a carta à linha atual
-            rowCartas.controls.append(
-                ft.Image(f"{carta.getNomeImagem()}", width=130, height=200, fit=ft.ImageFit.FIT_HEIGHT)
-            )
-            contador += 1
-        
-            # Quando 3 cartas são adicionadas à linha, adiciona a linha à coluna e cria uma nova linha
-            if contador == 3:
-                column.controls.append(rowCartas)
-                rowCartas = ft.Row(scroll="auto")  # Cria uma nova linha para as próximas cartas
-                contador = 0  # Reseta o contador
-    
-        # Adiciona a última linha (caso não tenha completado 3 cartas na última linha)
-        if contador > 0:
-            column.controls.append(rowCartas)
-    
-        return column
-
-    def __getImagensCartasExecutavel(self, cartas: list[Carta]):
-        """Gera a lista de imagens das cartas para a versão executável."""
-        rowCartas = ft.Row()
-        for carta in cartas:
-            if getattr(sys, 'frozen', False):
-                caminho_imagem = os.path.join(sys._MEIPASS, 'cartas', carta.getNomeImagem())
-            else:
-                caminho_imagem = os.path.join(os.path.dirname(__file__), 'cartas', carta.getNomeImagem())
-            
-            rowCartas.controls.append(
-                ft.Image(caminho_imagem)
-            )
-        return rowCartas
-    
     def __atualizarSaldoAposJogada(self, valorAdicionar):
         """Lógica para atualizar o saldo do jogador após uma jogada"""
         self.states.updateSaldo(valorAdicionar)
@@ -296,22 +269,26 @@ class JogoView(ft.View):
         self.__botaoComprar.disabled = True
         self.__botaoDoubleDown.disabled = True
         self.__botaoParar.disabled = True
+        self.__botaoSplit.disabled = True
         self.__build()
         
         while self.blackjack.verificarDealerPodeContinuar():
             self.blackjack.adicionarCartaDealaer()
             self.__build()
             time.sleep(2)
+            
+        self.__verificarVencedor()
         
+    def __verificarVencedor(self):
         resposta = self.blackjack.verificarVencedor()
         
-        mensagem = resposta.get("message")
+        mensagem = resposta[0].get("message")
         ganhou = "Empate"
         
-        if resposta.get("ganhou") == 1:
+        if resposta[0].get("ganhou") == 1:
             ganhou = f"{self.__jogador.getNomeJogador()} Ganhou!"
             
-        if resposta.get("ganhou") == 0:
+        if resposta[0].get("ganhou") == 0:
             ganhou = f"{self.__jogador.getNomeJogador()} Perdeu!"
             
         content = ft.Container(
@@ -322,12 +299,12 @@ class JogoView(ft.View):
                 height=300,
                 controls=[
                     ft.Text(mensagem, weight="bold"),
-                    ft.Text(value=f"Total {resposta.get('valor')}", size=20, weight="bold")
+                    ft.Text(value=f"Total {resposta[0].get('valor')}", size=20, weight="bold")
                 ]
             )
         )
         
-        self.__atualizarSaldoAposJogada(resposta.get('valor'))
+        self.__atualizarSaldoAposJogada(resposta[0].get('valor'))
         
         modal = Modal.newModal(self.page)
         modal.setTitle(ft.Text(ganhou, size=20, weight="bold"))
