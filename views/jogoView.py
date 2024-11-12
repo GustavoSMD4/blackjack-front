@@ -1,10 +1,7 @@
-import os
-import sys
 import time
 import flet as ft
 
 from classes.blackjack import Blackjack
-from classes.carta import Carta
 from classes.jogador import Jogador
 from components.modal import Modal
 from states import States
@@ -152,7 +149,7 @@ class JogoView(ft.View):
         
         self.bottom_appbar = ft.BottomAppBar(
             bgcolor=ft.colors.BLUE,
-            height=100,
+            height=200,
             content=ft.Column(
                 alignment=ft.MainAxisAlignment.CENTER,
                 controls=[

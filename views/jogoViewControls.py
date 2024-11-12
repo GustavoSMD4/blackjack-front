@@ -1,12 +1,8 @@
-import os
-import sys
-import time
 import flet as ft
 
 from classes.blackjack import Blackjack
 from classes.carta import Carta
 from classes.jogador import Jogador
-from components.modal import Modal
 from states import States
 
 class JogoViewControls:
@@ -25,16 +21,18 @@ class JogoViewControls:
         self.__buildContainerCartasJogador()
         
         containerDealer = ft.Column(
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[self.__columnCartasDealer]
         )
         
         containerJogador = ft.Column(
+            alignment=ft.MainAxisAlignment.CENTER,
             controls=[self.__columnCartasJogador]
         )
 
         return ft.Container(
             content=ft.Column(
-                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+                alignment=ft.MainAxisAlignment.CENTER,
                 controls=[
                     containerDealer,
                     ft.Divider(thickness=10, color="black"),
