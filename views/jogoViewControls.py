@@ -27,12 +27,16 @@ class JogoViewControls:
         
         containerJogador = ft.Column(
             alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[self.__columnCartasJogador]
         )
 
         return ft.Container(
+            expand=True,  # ocupa toda a área da tela
             content=ft.Column(
+                expand=True,
                 alignment=ft.MainAxisAlignment.CENTER,
+                horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                 controls=[
                     containerDealer,
                     ft.Divider(thickness=10, color="black"),
