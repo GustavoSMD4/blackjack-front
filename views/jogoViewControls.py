@@ -12,9 +12,10 @@ class JogoViewControls:
         self.blackjack = blackjack
         self.__jogador = jogador
         self.__columnCartasJogador = None
-        self.nomeJogador = None
         self.__columnCartasDealer = None
-        
+        self.textoNomeJogador = None
+        self.textoNomeDealer = None
+
     def controls(self):
         """Constrói a interface do jogo com as cartas e botões atualizados."""
         self.__buildContainerCartasDealer()
@@ -32,7 +33,8 @@ class JogoViewControls:
         )
 
         return ft.Container(
-            expand=True,  # ocupa toda a área da tela
+            expand=True,
+            alignment=ft.alignment.center,
             content=ft.Column(
                 expand=True,
                 alignment=ft.MainAxisAlignment.CENTER,
@@ -47,53 +49,65 @@ class JogoViewControls:
 
     def __buildContainerCartasJogador(self):
         """Constrói o container de cartas do jogador."""
-        self.nomeJogador = ft.Text(f"{self.__jogador.getNomeJogador()} - tem {self.__jogador.getValorMao()}", weight="bold", size=20, text_align=ft.TextAlign.CENTER)
+        self.textoNomeJogador = ft.Text(
+            f"{self.__jogador.getNomeJogador()} - tem {self.__jogador.getValorMao()}",
+            weight="bold",
+            size=20,
+            text_align=ft.TextAlign.CENTER
+        )
         
         self.__columnCartasJogador = ft.Column(
             alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                self.nomeJogador,
-                ft.Text(value=f"Valor da aposta: {self.__jogador.getValorAposta()}", weight="bold", size=16),
+                self.textoNomeJogador,
+                ft.Text(
+                    value=f"Valor da aposta: {self.__jogador.getValorAposta()}",
+                    weight="bold",
+                    size=16,
+                    text_align=ft.TextAlign.CENTER
+                ),
                 self.__getImagensCartas(self.__jogador.getCards())
             ]
         )
 
     def __buildContainerCartasDealer(self):
         """Constrói o container de cartas do dealer."""
-        self.nomeJogador = ft.Text(f"{self.blackjack.dealer.getNomeJogador()} - tem {self.blackjack.dealer.getValorMao()}", weight="bold", size=20, text_align=ft.TextAlign.CENTER)
+        self.textoNomeDealer = ft.Text(
+            f"{self.blackjack.dealer.getNomeJogador()} - tem {self.blackjack.dealer.getValorMao()}",
+            weight="bold",
+            size=20,
+            text_align=ft.TextAlign.CENTER
+        )
         
         self.__columnCartasDealer = ft.Column(
             alignment=ft.MainAxisAlignment.CENTER,
+            horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             controls=[
-                self.nomeJogador,
+                self.textoNomeDealer,
                 self.__getImagensCartas(self.blackjack.dealer.getCards())
             ]
         )
 
     def __getImagensCartas(self, cartas: list[Carta]):
         """Gera a lista de imagens das cartas, com 3 cartas por linha."""
-        column = ft.Column(scroll="auto")
-        rowCartas = ft.Row(scroll="auto")
-    
-        # Contador para adicionar uma nova linha a cada 3 cartas
+        column = ft.Column(scroll="auto", horizontal_alignment=ft.CrossAxisAlignment.CENTER)
+        rowCartas = ft.Row(scroll="auto", alignment=ft.MainAxisAlignment.CENTER)
+
         contador = 0
-    
+
         for carta in cartas:
-            # Adiciona a carta à linha atual
             rowCartas.controls.append(
                 ft.Image(f"{carta.getNomeImagem()}", width=130, height=200, fit=ft.ImageFit.FIT_HEIGHT)
             )
             contador += 1
-        
-            # Quando 3 cartas são adicionadas à linha, adiciona a linha à coluna e cria uma nova linha
+
             if contador == 3:
                 column.controls.append(rowCartas)
-                rowCartas = ft.Row(scroll="auto")  # Cria uma nova linha para as próximas cartas
-                contador = 0  # Reseta o contador
-    
-        # Adiciona a última linha (caso não tenha completado 3 cartas na última linha)
+                rowCartas = ft.Row(scroll="auto", alignment=ft.MainAxisAlignment.CENTER)
+                contador = 0
+
         if contador > 0:
             column.controls.append(rowCartas)
-    
+
         return column
-    
