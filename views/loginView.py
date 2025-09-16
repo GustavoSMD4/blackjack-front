@@ -16,7 +16,7 @@ class LoginView(ft.View):
         self.senhaField = ft.TextField(label="Senha", width=300, password=True, can_reveal_password=True)
         self.botaoLogin = ft.ElevatedButton(
             text="Login",
-            icon=ft.icons.LOGIN,
+            icon=ft.Icons.LOGIN,
             bgcolor="blue",
             width=300,
             on_click=lambda _: self.__handleLogin()
@@ -24,7 +24,7 @@ class LoginView(ft.View):
         
         self.botaoCriarConta = ft.ElevatedButton(
             text="Criar conta",
-            icon=ft.icons.CREATE,
+            icon=ft.Icons.CREATE,
             bgcolor="blue",
             width=300,
             on_click=lambda _: self.page.go("/criarconta")

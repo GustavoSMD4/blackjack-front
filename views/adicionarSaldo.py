@@ -15,14 +15,14 @@ class AdicionarSaldoView(ft.View):
         
         self.botaoConfirmar = ft.ElevatedButton(
             text="Confirmar",
-            icon=ft.icons.ADD,
+            icon=ft.Icons.ADD,
             bgcolor="blue",
             on_click=lambda _: self.__handleConfirmar()
         )
         
         self.botaoCancelar = ft.ElevatedButton(
             text="Cancelar",
-            icon=ft.icons.CANCEL,
+            icon=ft.Icons.CANCEL,
             on_click=lambda _: self.page.go("/blackjack")
         )
         

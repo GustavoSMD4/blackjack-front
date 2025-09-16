@@ -30,22 +30,22 @@ class JogoView(ft.View):
     def __create_buttons(self):
         """Recria os botões, com a lógica de habilitar/desabilitar correta."""
         self.__botaoComprar = ft.ElevatedButton(
-            icon=ft.icons.ADD, text="Comprar",
-            icon_color=ft.colors.BLUE,
+            icon=ft.Icons.ADD, text="Comprar",
+            icon_color=ft.Colors.BLUE,
             on_click=self.__handleAddCartaJogador,
             disabled=not self.blackjack.verificarJogadorPodeContinuar(self.__jogador)
         )
 
         self.__botaoParar = ft.ElevatedButton(
-            icon=ft.icons.STOP,
+            icon=ft.Icons.STOP,
             text="Parar",
-            icon_color=ft.colors.RED,
+            icon_color=ft.Colors.RED,
             on_click=self.__handleParar
         )
 
         self.__botaoDoubleDown = ft.ElevatedButton(
-            icon=ft.icons.DOUBLE_ARROW, text="Dobrar",
-            icon_color=ft.colors.GREEN,
+            icon=ft.Icons.DOUBLE_ARROW, text="Dobrar",
+            icon_color=ft.Colors.GREEN,
             tooltip="Ao dobrar você vai receber somente mais uma carta!",
             on_click=self.__handleDoubleDown,
             disabled=not self.blackjack.verificarJogadorPodeContinuar(self.__jogador)
@@ -53,7 +53,7 @@ class JogoView(ft.View):
         
         self.__botaoSplit = ft.ElevatedButton(
             text="Dividir",
-            icon=ft.icons.SPLITSCREEN,
+            icon=ft.Icons.SPLITSCREEN,
             disabled=not self.blackjack.verificarJogadorPodeDividir(self.__jogador),
             on_click=self.__handleSplit
         )
@@ -87,7 +87,7 @@ class JogoView(ft.View):
                     ft.ResponsiveRow(
                         controls=[
                             ft.IconButton(
-                                icon=ft.icons.REMOVE,
+                                icon=ft.Icons.REMOVE,
                                 key="remove",
                                 on_click=addRemove
                             ),
@@ -95,7 +95,7 @@ class JogoView(ft.View):
                             self.__valorAposta,
                             
                             ft.IconButton(
-                                icon=ft.icons.ADD,
+                                icon=ft.Icons.ADD,
                                 key="add",
                                 on_click=addRemove
                             )
@@ -105,7 +105,7 @@ class JogoView(ft.View):
                     
                     ft.ElevatedButton(
                         text="Adicionar Saldo",
-                        icon=ft.icons.MONEY,
+                        icon=ft.Icons.MONEY,
                         bgcolor="blue",
                         on_click=lambda _: self.page.go("/addsaldo")
                     )
@@ -148,7 +148,7 @@ class JogoView(ft.View):
         """Constrói a interface do jogo com as cartas e botões atualizados."""
         
         self.bottom_appbar = ft.BottomAppBar(
-            bgcolor=ft.colors.BLUE,
+            bgcolor=ft.Colors.BLUE,
             height=200,
             content=ft.Column(
                 alignment=ft.MainAxisAlignment.CENTER,
